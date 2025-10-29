@@ -1,14 +1,11 @@
-# 🌙✨ It-Girl Cosmic Fortune ✨🌙
+# 🌙✨ It-Girl 사주 기반 운세 ✨🌙
 import streamlit as st
 import datetime
 import random
+from lunardate import LunarDate
 
-# ----------------- 🎀 기본 세팅 🎀 -----------------
-st.set_page_config(
-    page_title="✨오늘의 잇걸 별자리 운세✨",
-    page_icon="🌙",
-    layout="centered"
-)
+# ----------------- 🌸 기본 설정 -----------------
+st.set_page_config(page_title="✨오늘의 사주 운세✨", page_icon="🌙", layout="centered")
 
 st.markdown("""
 <style>
@@ -19,140 +16,110 @@ body {
 }
 h1, h2, h3 {
     text-align: center;
-    font-family: 'Cafe24 Ssurround', cursive;
 }
 .big-emoji {
     font-size: 80px;
     text-align: center;
 }
-.center {
-    text-align: center;
-}
-a {
-    text-decoration: none;
-    color: #ff4b8a;
-    font-weight: bold;
-}
+.center { text-align: center; }
 .rank-box {
     background-color: #fff0f5;
     border-radius: 12px;
-    padding: 12px;
-    margin: 6px 0;
+    padding: 10px;
+    margin: 5px 0;
     box-shadow: 0 2px 6px rgba(255, 128, 171, 0.3);
 }
 </style>
 """, unsafe_allow_html=True)
 
-# ----------------- 🌸 헤더 -----------------
 st.markdown('<div class="big-emoji">🌞🌙🌷</div>', unsafe_allow_html=True)
-st.title("✨오늘의 잇걸 운세✨")
-st.subheader("💖 별자리 · 사주 · 명언 · 행운의 행동 💫")
+st.title("✨오늘의 사주 운세✨")
+st.subheader("🌸 만세력 기반으로 보는 나의 하루 🔮")
 
-# ----------------- 🌈 입력 -----------------
-col1, col2 = st.columns(2)
+# ----------------- 🔢 입력 -----------------
+col1, col2, col3 = st.columns(3)
 with col1:
-    name = st.text_input("💋 이름을 알려줘:", "")
+    name = st.text_input("💖 이름:", "")
 with col2:
-    birthday = st.date_input("🎂 생일을 선택해줘:", datetime.date(2000, 1, 1))
+    birth_date = st.date_input("🎂 생일:", datetime.date(2000, 1, 1))
+with col3:
+    birth_hour = st.selectbox("🕐 태어난 시간:", 
+        ["자(23~1시)", "축(1~3시)", "인(3~5시)", "묘(5~7시)", 
+         "진(7~9시)", "사(9~11시)", "오(11~13시)", 
+         "미(13~15시)", "신(15~17시)", "유(17~19시)", "술(19~21시)", "해(21~23시)"])
 
-# ----------------- 🌟 별자리 계산 -----------------
-zodiac_signs = {
-    (120, 218): "♒️ 물병자리",
-    (219, 320): "♓️ 물고기자리",
-    (321, 419): "♈️ 양자리",
-    (420, 520): "♉️ 황소자리",
-    (521, 620): "♊️ 쌍둥이자리",
-    (621, 722): "♋️ 게자리",
-    (723, 822): "♌️ 사자자리",
-    (823, 922): "♍️ 처녀자리",
-    (923, 1022): "♎️ 천칭자리",
-    (1023, 1121): "♏️ 전갈자리",
-    (1122, 1221): "♐️ 사수자리",
-    (1222, 119): "♑️ 염소자리"
+# ----------------- 🪄 천간·지지 데이터 -----------------
+heavenly_stems = ["갑", "을", "병", "정", "무", "기", "경", "신", "임", "계"]
+earthly_branches = ["자", "축", "인", "묘", "진", "사", "오", "미", "신", "유", "술", "해"]
+
+five_elements = {
+    "갑": "목", "을": "목",
+    "병": "화", "정": "화",
+    "무": "토", "기": "토",
+    "경": "금", "신": "금",
+    "임": "수", "계": "수"
 }
 
-def get_zodiac(month, day):
-    md = month * 100 + day
-    for (start, end), sign in zodiac_signs.items():
-        if start <= md <= end or (start > end and (md >= start or md <= end)):
-            return sign
-    return "🌌 알 수 없음"
+colors = {
+    "목": "💚 초록 (성장과 시작의 기운)",
+    "화": "❤️ 빨강 (열정과 추진력의 기운)",
+    "토": "💛 노랑 (안정과 중심의 기운)",
+    "금": "🤍 하양 (정리와 판단의 기운)",
+    "수": "💙 파랑 (지혜와 흐름의 기운)"
+}
 
-# ----------------- 🔮 운세 데이터 -----------------
-love = ["💘 사랑이 피어나는 하루예요", "💞 새로운 인연이 다가올지도 몰라요", "💋 따뜻한 대화가 행운을 불러요"]
-work = ["💼 집중력이 최고예요", "🌟 당신의 아이디어가 주목받아요", "📈 꾸준함이 큰 결과를 가져와요"]
-fortune = ["🍀 작은 행운이 속삭여요", "🌈 좋은 기운이 당신 곁에 있어요", "🦋 예상 못한 기쁨이 찾아와요"]
-mood = ["☕️ 따뜻하고 안정적인 하루", "🌷 자신에게 부드럽게 대해요", "🎀 감정의 균형이 조화를 이루어요"]
+# ----------------- 🔮 만세력 계산 -----------------
+def get_four_pillars(date):
+    # 간단한 계산 방식 (정확한 천간/지지는 천문력 기반이지만, 여긴 구조 예시)
+    base_date = datetime.date(1900, 1, 1)
+    diff_days = (date - base_date).days
+    year_stem = heavenly_stems[(date.year - 4) % 10]
+    year_branch = earthly_branches[(date.year - 4) % 12]
+    month_stem = heavenly_stems[(date.month + date.year) % 10]
+    month_branch = earthly_branches[(date.month + 2) % 12]
+    day_stem = heavenly_stems[diff_days % 10]
+    day_branch = earthly_branches[diff_days % 12]
+    return (year_stem, year_branch, month_stem, month_branch, day_stem, day_branch)
 
-quotes = [
-    "💬 *“오늘의 당신은 어제보다 더 빛나요.”* – 익명",
-    "🌙 *“행운은 준비된 마음에 온다.”* – 루이 파스퇴르",
-    "🌸 *“자신을 사랑하는 것이 모든 행복의 시작이다.”* – 루시 메이",
-    "🪞 *“완벽하지 않아도 괜찮아, 이미 충분히 아름다워.”*",
-    "🌷 *“하루를 바꾸면 인생이 달라진다.”* – 로빈 샤르마"
-]
-
-lucky_actions = [
-    "🍓 딸기우유 마시기",
-    "💌 좋아하는 사람에게 안부 인사하기",
-    "🕯 향초 켜놓고 10분 명상하기",
-    "📖 책 한 장만이라도 읽기",
-    "🌿 산책하면서 하늘 보기",
-    "🎧 노래 한 곡 전부 들으면서 휴대폰 내려놓기",
-    "☕️ 오늘 하루 감사한 일 3가지 떠올리기"
-]
-
-music_recs = [
-    ("🌼 IU - Love wins all", "https://www.youtube.com/watch?v=oxKCPjcvbys"),
-    ("🌙 NewJeans - Super Shy", "https://www.youtube.com/watch?v=ArmDp-zijuc"),
-    ("🍓 TAEYEON - Weekend", "https://www.youtube.com/watch?v=QUHy3VbK1lM"),
-    ("🌊 Crush - 나빠 (NAPPA)", "https://www.youtube.com/watch?v=QYNwbZHmh8g"),
-    ("🌹 LUCY - Flowering", "https://www.youtube.com/watch?v=dvwK2_5Wq0A"),
-    ("☁️ DPR LIVE - Jasmine", "https://www.youtube.com/watch?v=6oT2n1i3qWw"),
-    ("✨ Red Velvet - Feel My Rhythm", "https://www.youtube.com/watch?v=R9At2ICm4LQ"),
-    ("💫 BIBI - 나쁜년 (BIBI Vengeance)", "https://www.youtube.com/watch?v=JZoFqIxlbk0")
-]
-
-# ----------------- 🪞 운세 생성 -----------------
+# ----------------- 🪞 운세 결과 -----------------
 if name:
-    zodiac = get_zodiac(birthday.month, birthday.day)
-    today_seed = int(birthday.strftime("%m%d")) + datetime.date.today().toordinal()
-    random.seed(today_seed)
+    year_s, year_b, month_s, month_b, day_s, day_b = get_four_pillars(birth_date)
+    element = five_elements[day_s]
+    color = colors[element]
+
+    today = datetime.date.today()
+    today_s, today_b, _, _, _, _ = get_four_pillars(today)
+    today_element = five_elements[today_s]
 
     st.markdown("---")
-    st.markdown(f"### 🌙 {name}님의 오늘의 운세 🌙")
-    st.markdown(f"**별자리:** {zodiac}")
+    st.markdown(f"### 🌙 {name}님의 오늘의 사주 운세 🌙")
+    st.markdown(f"**생년월일:** {birth_date.strftime('%Y-%m-%d')} {birth_hour}")
+    st.markdown(f"**오늘:** {today.strftime('%Y-%m-%d')}")
+    st.markdown(f"**당신의 일주(주된 기운):** {day_s}{day_b} ({element})")
+    st.markdown(f"**오늘의 기운:** {today_s}{today_b} ({today_element})")
+
+    # 궁합 판단 (같은 오행이면 좋음)
+    if element == today_element:
+        result = "🌈 오늘은 우주의 흐름이 당신 편이에요! 모든 게 자연스럽게 흘러가요."
+    else:
+        result = random.choice([
+            "🍀 새로운 도전이 좋은 변화를 불러올 거예요.",
+            "🌷 주변과 조화를 이루면 운이 들어와요.",
+            "🕯 잠시 멈춰 마음의 중심을 잡아보세요."
+        ])
+
     st.markdown("---")
-
-    st.markdown(f"💘 **사랑운:** {random.choice(love)}")
-    st.markdown(f"💼 **일/공부운:** {random.choice(work)}")
-    st.markdown(f"🍀 **행운운:** {random.choice(fortune)}")
-    st.markdown(f"🕯 **기분:** {random.choice(mood)}")
-
-    st.markdown("---")
-    st.markdown(f"🪞 **오늘의 명언**\n{random.choice(quotes)}")
-    st.markdown(f"🎧 **오늘의 추천 음악:** [{random.choice(music_recs)[0]}]({random.choice(music_recs)[1]})")
-    st.markdown(f"🌸 **오늘의 행운 행동:** {random.choice(lucky_actions)}")
-
-    st.markdown("---")
-
-    # ----------------- 🌟 별자리 운세 랭킹 -----------------
-    st.markdown("## 🌟 오늘의 별자리 TOP 3 🌟")
-    all_zodiacs = list(zodiac_signs.values())
-    random.shuffle(all_zodiacs)
-    ranks = all_zodiacs[:3]
-    for i, sign in enumerate(ranks, 1):
-        st.markdown(f"""
-        <div class='rank-box'>
-            <h4>{i}위 ✨ {sign}</h4>
-        </div>
-        """, unsafe_allow_html=True)
+    st.markdown(f"💫 **오늘의 메시지:** {result}")
+    st.markdown(f"🎨 **오늘의 기운 색상:** {color}")
+    st.markdown(f"🪞 **오늘의 명언:** {random.choice(['“운명은 용기 있는 자의 편이다.” – 베르길리우스', '“오늘의 기분이 내일의 운을 만든다.”', '“지금의 나를 믿는 것이 최고의 행운이다.”'])}")
+    st.markdown(f"🌸 **행운 행동:** {random.choice(['따뜻한 차 마시기 ☕️', '감사한 일 세 가지 적기 ✍️', '좋아하는 향수 뿌리기 💐'])}")
+    st.markdown(f"🎧 **추천 음악:** [{random.choice(['IU - Palette', '태연 - Fine', 'LUCY - Flowering', 'BIBI - 밤양갱'])}](https://www.youtube.com)")
 
     st.markdown("---")
     st.markdown("🪴 _별처럼 반짝이는 하루 보내요._")
 
 # ----------------- 🌷 푸터 -----------------
 st.markdown("""
-<div class="center">✨ made with love by 🌙 it-girl cosmic vibes ✨</div>
+<div class="center">✨ made with love by 🌙✨</div>
 """, unsafe_allow_html=True)
 
