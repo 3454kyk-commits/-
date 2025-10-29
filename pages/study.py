@@ -5,13 +5,13 @@ import base64
 # 🌸 페이지 기본 설정
 st.set_page_config(page_title="BloomFocus 🌱", page_icon="🌼", layout="centered")
 
-# 🎵 로파이 사운드 임베드 (YouTube or mp3 링크 가능)
+# 🎵 로파이 사운드 임베드 함수
 def autoplay_audio(file_path: str):
     with open(file_path, "rb") as f:
         data = f.read()
     b64 = base64.b64encode(data).decode()
     md = f"""
-        <audio controls autoplay loop>
+        <audio controls autoplay loop style="width:100%">
             <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
         </audio>
         """
@@ -37,11 +37,10 @@ focus_time = st.slider("집중 시간 (분)", 5, 60, 25)
 break_time = st.slider("휴식 시간 (분)", 1, 15, 5)
 cycles = st.number_input("반복 횟수 🔁", 1, 8, 2)
 
-start = st.button("🌿 집중 시작하기")
-
-# 🎵 사운드 파일 경로
-# 👉 mp3 파일 이름을 바꿔서 로컬에 두면 됨. (예: 'lofi.mp3')
+# 🎧 사운드 파일 경로
 sound_file = "lofi.mp3"
+
+start = st.button("🌿 집중 시작하기")
 
 if start:
     st.write(f"🎧 로파이 사운드 재생 중... 집중 모드로 들어갑니다 🌙")
@@ -50,31 +49,52 @@ if start:
     progress_bar = st.progress(0)
     stage_text = st.empty()
     status_text = st.empty()
+    timer_display = st.empty()  # ⏰ 실시간 타이머 표시용
 
     total_cycles = cycles
     for cycle in range(total_cycles):
         st.markdown(f"## 🌸 {cycle+1}번째 사이클 시작 🌸")
-        
-        # 🌿 공부 시간
-        for sec in range(focus_time * 60):
-            progress = (sec + 1) / (focus_time * 60)
+
+        # 🌿 집중 시간
+        total_focus_sec = focus_time * 60
+        for sec in range(total_focus_sec):
+            remaining = total_focus_sec - sec
+            minutes = remaining // 60
+            seconds = remaining % 60
+            progress = (sec + 1) / total_focus_sec
             progress_bar.progress(progress)
+
+            # 성장 단계 표시
             if progress < 0.33:
                 stage_text.markdown("<h2 style='text-align:center;'>🌱 새싹이 자라나요...</h2>", unsafe_allow_html=True)
             elif progress < 0.66:
                 stage_text.markdown("<h2 style='text-align:center;'>🌿 줄기가 자라나요...</h2>", unsafe_allow_html=True)
             else:
                 stage_text.markdown("<h2 style='text-align:center;'>🌳 꽃이 피어나요!</h2>", unsafe_allow_html=True)
-            status_text.text(f"집중 중... {int(progress*100)}% 완료 ⏳")
+            
+            # 타이머 표시
+            timer_display.markdown(
+                f"<h2 style='text-align:center; color:#ff7f50;'>⏰ {minutes:02d}:{seconds:02d}</h2>",
+                unsafe_allow_html=True
+            )
+            status_text.text(f"집중 중... {int(progress*100)}% 완료 💪")
             time.sleep(1)
-        
+
         st.success(f"🎉 {plant}가 한 단계 성장했어요! 잠시 휴식해요 🍵")
 
         # ☕ 휴식 시간
-        for sec in range(break_time * 60):
-            progress = (sec + 1) / (break_time * 60)
+        total_break_sec = break_time * 60
+        for sec in range(total_break_sec):
+            remaining = total_break_sec - sec
+            minutes = remaining // 60
+            seconds = remaining % 60
+            progress = (sec + 1) / total_break_sec
             progress_bar.progress(progress)
             stage_text.markdown("<h2 style='text-align:center;'>🍵 휴식 중... 🌿</h2>", unsafe_allow_html=True)
+            timer_display.markdown(
+                f"<h2 style='text-align:center; color:#6B8E23;'>💤 {minutes:02d}:{seconds:02d}</h2>",
+                unsafe_allow_html=True
+            )
             status_text.text(f"휴식 {int(progress*100)}% 진행 중 💤")
             time.sleep(1)
 
