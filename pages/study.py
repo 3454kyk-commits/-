@@ -120,6 +120,7 @@ if name:
 
 # ----------------- 🌷 푸터 -----------------
 st.markdown("""
-<div class="center">✨ made with love by 🌙✨</div>
+<div class="center">✨ made with love by 🌙 it-girl cosmic vibes ✨</div>
 """, unsafe_allow_html=True)
+
 
