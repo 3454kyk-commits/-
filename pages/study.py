@@ -1,110 +1,121 @@
+# 🌙✨ It-Girl Horoscope & Saju Today ✨🌙
 import streamlit as st
-import time
-import base64
+import datetime
+import random
 
-# 🌸 페이지 기본 설정
-st.set_page_config(page_title="BloomFocus 🌱", page_icon="🌼", layout="centered")
-
-# 🎵 로파이 사운드 임베드 함수
-def autoplay_audio(file_path: str):
-    with open(file_path, "rb") as f:
-        data = f.read()
-    b64 = base64.b64encode(data).decode()
-    md = f"""
-        <audio controls autoplay loop style="width:100%">
-            <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
-        </audio>
-        """
-    st.markdown(md, unsafe_allow_html=True)
-
-# 🌿 헤더
-st.markdown("""
-<h1 style='text-align:center; color:#6B8E23;'>🌷 BloomFocus 🌷</h1>
-<p style='text-align:center; color:#808080;'>
-공부할수록 나의 식물이 자라나요 🌱<br>힐링과 집중을 동시에 💫
-</p>
-""", unsafe_allow_html=True)
-
-# 🌼 식물 선택
-plant = st.selectbox(
-    "키우고 싶은 식물을 선택하세요 🌿",
-    ["🌱 새싹", "🌵 선인장", "🌼 해바라기", "🌸 벚꽃나무", "🌾 라벤더"]
+# ----------------- 🎀 기본 세팅 🎀 -----------------
+st.set_page_config(
+    page_title="✨오늘의 별자리 & 사주 운세✨",
+    page_icon="🌙",
+    layout="centered"
 )
 
-# ⏳ 포모도로 설정
-st.markdown("### 🍅 포모도로 모드 설정")
-focus_time = st.slider("집중 시간 (분)", 5, 60, 25)
-break_time = st.slider("휴식 시간 (분)", 1, 15, 5)
-cycles = st.number_input("반복 횟수 🔁", 1, 8, 2)
-
-# 🎧 사운드 파일 경로
-sound_file = "lofi.mp3"
-
-start = st.button("🌿 집중 시작하기")
-
-if start:
-    st.write(f"🎧 로파이 사운드 재생 중... 집중 모드로 들어갑니다 🌙")
-    autoplay_audio(sound_file)
-
-    progress_bar = st.progress(0)
-    stage_text = st.empty()
-    status_text = st.empty()
-    timer_display = st.empty()  # ⏰ 실시간 타이머 표시용
-
-    total_cycles = cycles
-    for cycle in range(total_cycles):
-        st.markdown(f"## 🌸 {cycle+1}번째 사이클 시작 🌸")
-
-        # 🌿 집중 시간
-        total_focus_sec = focus_time * 60
-        for sec in range(total_focus_sec):
-            remaining = total_focus_sec - sec
-            minutes = remaining // 60
-            seconds = remaining % 60
-            progress = (sec + 1) / total_focus_sec
-            progress_bar.progress(progress)
-
-            # 성장 단계 표시
-            if progress < 0.33:
-                stage_text.markdown("<h2 style='text-align:center;'>🌱 새싹이 자라나요...</h2>", unsafe_allow_html=True)
-            elif progress < 0.66:
-                stage_text.markdown("<h2 style='text-align:center;'>🌿 줄기가 자라나요...</h2>", unsafe_allow_html=True)
-            else:
-                stage_text.markdown("<h2 style='text-align:center;'>🌳 꽃이 피어나요!</h2>", unsafe_allow_html=True)
-            
-            # 타이머 표시
-            timer_display.markdown(
-                f"<h2 style='text-align:center; color:#ff7f50;'>⏰ {minutes:02d}:{seconds:02d}</h2>",
-                unsafe_allow_html=True
-            )
-            status_text.text(f"집중 중... {int(progress*100)}% 완료 💪")
-            time.sleep(1)
-
-        st.success(f"🎉 {plant}가 한 단계 성장했어요! 잠시 휴식해요 🍵")
-
-        # ☕ 휴식 시간
-        total_break_sec = break_time * 60
-        for sec in range(total_break_sec):
-            remaining = total_break_sec - sec
-            minutes = remaining // 60
-            seconds = remaining % 60
-            progress = (sec + 1) / total_break_sec
-            progress_bar.progress(progress)
-            stage_text.markdown("<h2 style='text-align:center;'>🍵 휴식 중... 🌿</h2>", unsafe_allow_html=True)
-            timer_display.markdown(
-                f"<h2 style='text-align:center; color:#6B8E23;'>💤 {minutes:02d}:{seconds:02d}</h2>",
-                unsafe_allow_html=True
-            )
-            status_text.text(f"휴식 {int(progress*100)}% 진행 중 💤")
-            time.sleep(1)
-
-    st.balloons()
-    st.success(f"🌺 축하해요! {plant}가 완전히 성장했어요 💪✨")
-
-# 🌈 푸터
 st.markdown("""
-<hr>
-<p style='text-align:center; color:#A9A9A9;'>
-🌿 created with ❤️ by 니야 | keep blooming, keep growing 🌸
-</p>
+<style>
+body {
+    background: linear-gradient(180deg, #fff8f8 0%, #ffe8f0 100%);
+    color: #2b2b2b;
+    font-family: 'Pretendard', sans-serif;
+}
+h1, h2, h3 {
+    text-align: center;
+    font-family: 'Cafe24 Ssurround', cursive;
+}
+.big-emoji {
+    font-size: 80px;
+    text-align: center;
+}
+.center {
+    text-align: center;
+}
+a {
+    text-decoration: none;
+    color: #ff4b8a;
+    font-weight: bold;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# ----------------- 🌸 헤더 -----------------
+st.markdown('<div class="big-emoji">🌞🌙🌷</div>', unsafe_allow_html=True)
+st.title("✨오늘의 운세 - 별자리 & 사주✨")
+st.subheader("☕️ 오늘의 우주가 내게 속삭이는 메시지 💫")
+
+# ----------------- 🌈 입력 -----------------
+col1, col2 = st.columns(2)
+with col1:
+    name = st.text_input("💖 이름을 알려줘:", "")
+with col2:
+    birthday = st.date_input("🎂 생일을 선택해줘:", datetime.date(2000, 1, 1))
+
+# ----------------- 🌟 별자리 계산 -----------------
+zodiac_signs = {
+    (120, 218): "♒️ 물병자리",
+    (219, 320): "♓️ 물고기자리",
+    (321, 419): "♈️ 양자리",
+    (420, 520): "♉️ 황소자리",
+    (521, 620): "♊️ 쌍둥이자리",
+    (621, 722): "♋️ 게자리",
+    (723, 822): "♌️ 사자자리",
+    (823, 922): "♍️ 처녀자리",
+    (923, 1022): "♎️ 천칭자리",
+    (1023, 1121): "♏️ 전갈자리",
+    (1122, 1221): "♐️ 사수자리",
+    (1222, 119): "♑️ 염소자리"
+}
+
+def get_zodiac(month, day):
+    md = month * 100 + day
+    for (start, end), sign in zodiac_signs.items():
+        if start <= md <= end or (start > end and (md >= start or md <= end)):
+            return sign
+    return "🌌 알 수 없음"
+
+# ----------------- 🔮 운세 메시지 -----------------
+love = ["💘 사랑이 피어나는 하루예요", "💞 달콤한 눈빛 교환이 있을지도 몰라요", "💋 사랑의 기운이 당신을 감싸요"]
+work = ["💼 새로운 아이디어가 샘솟아요", "🌟 집중력이 최고예요", "📈 당신의 노력이 드러나는 날이에요"]
+fortune = ["🍀 작은 행운이 속삭여요", "🌈 우연한 기쁨이 찾아올 거예요", "🦋 좋은 소식이 멀지 않았어요"]
+mood = ["☕️ 차분하고 안정적인 하루", "🌷 마음이 따뜻해지는 순간이 많아요", "🎀 스스로에게 부드럽게 대해요"]
+
+# ----------------- 🎧 추천 음악 목록 -----------------
+music_recs = [
+    ("🌼 IU - Love wins all", "https://www.youtube.com/watch?v=oxKCPjcvbys"),
+    ("🌙 NewJeans - Super Shy", "https://www.youtube.com/watch?v=ArmDp-zijuc"),
+    ("🍓 TAEYEON - Weekend", "https://www.youtube.com/watch?v=QUHy3VbK1lM"),
+    ("🌊 Crush - 나빠 (NAPPA)", "https://www.youtube.com/watch?v=QYNwbZHmh8g"),
+    ("🌹 LUCY - Flowering", "https://www.youtube.com/watch?v=dvwK2_5Wq0A"),
+    ("☁️ DPR LIVE - Jasmine", "https://www.youtube.com/watch?v=6oT2n1i3qWw"),
+    ("✨ Red Velvet - Feel My Rhythm", "https://www.youtube.com/watch?v=R9At2ICm4LQ"),
+    ("💫 BIBI - 나쁜년 (BIBI Vengeance)", "https://www.youtube.com/watch?v=JZoFqIxlbk0")
+]
+
+# ----------------- 🌷 운세 생성 -----------------
+if name:
+    zodiac = get_zodiac(birthday.month, birthday.day)
+    today_seed = int(birthday.strftime("%m%d")) + datetime.date.today().toordinal()
+    random.seed(today_seed)
+
+    st.markdown("---")
+    st.markdown(f"### 🌙 {name}님의 오늘의 운세 🌙")
+    st.markdown(f"**별자리:** {zodiac}")
+    st.markdown("---")
+
+    st.markdown(f"💘 **사랑운:** {random.choice(love)}")
+    st.markdown(f"💼 **일/공부운:** {random.choice(work)}")
+    st.markdown(f"🍀 **행운운:** {random.choice(fortune)}")
+    st.markdown(f"🕯 **기분:** {random.choice(mood)}")
+
+    st.markdown("---")
+    st.markdown("🌸 **오늘의 한 줄 메시지** 🌸")
+    st.markdown(f"✨ *'{random.choice(['우주는 오늘도 당신을 응원해요 🌌', '자신을 믿는 게 최고의 부적이에요 💖', '당신의 페이스로 천천히 가요 ☕️'])}'*")
+
+    st.markdown("---")
+    music = random.choice(music_recs)
+    st.markdown(f"🎧 **오늘의 추천 음악:** [{music[0]}]({music[1]})")
+
+    st.markdown("🪞 _별처럼 반짝이는 하루 보내요._")
+
+# ----------------- 🌷 푸터 -----------------
+st.markdown("""
+<div class="center">✨ made with love by 🌙 it-girl cosmic vibes ✨</div>
 """, unsafe_allow_html=True)
