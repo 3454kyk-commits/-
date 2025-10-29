@@ -1,10 +1,10 @@
-# 🌙✨ It-Girl 사주 기반 운세 ✨🌙
+# 🌙✨ 오늘의 운세 ✨🌙
 import streamlit as st
 import datetime
 import random
 from lunardate import LunarDate
 
-# ----------------- 🌸 기본 설정 -----------------
+
 st.set_page_config(page_title="✨오늘의 사주 운세✨", page_icon="🌙", layout="centered")
 
 st.markdown("""
