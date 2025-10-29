@@ -5,7 +5,7 @@ import random
 
 # ----------------- 🎀 기본 세팅 🎀 -----------------
 st.set_page_config(
-    page_title="✨오늘의 잇걸 별자리 운세✨",
+    page_title="✨오늘의 별자리 운세✨",
     page_icon="🌙",
     layout="centered"
 )
